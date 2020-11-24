@@ -35,7 +35,65 @@ FULL_MORE_LIST = MORE_LIST + [
 ]
 
 
-if discord.version_info[:2] >= (1, 4):
+if discord.version_info[:2] >= (1, 6):
+    EMOJI_MESSAGE_REFERENCE_COMMON_KWARGS = {
+        "channel_id": 133251234164375552,
+        "guild_id": 133049272517001216,
+    }
+    EMOJI_MESSAGE_REFERENCES = {
+        "\N{SMILING FACE WITH OPEN MOUTH}": discord.MessageReference(
+            message_id=780807695129116742, **EMOJI_MESSAGE_REFERENCE_COMMON_KWARGS
+        ),
+        "\N{SMILING CAT FACE WITH OPEN MOUTH}": discord.MessageReference(
+            message_id=780807859780059157, **EMOJI_MESSAGE_REFERENCE_COMMON_KWARGS
+        ),
+        "\N{JEANS}": discord.MessageReference(
+            message_id=780808038948667442, **EMOJI_MESSAGE_REFERENCE_COMMON_KWARGS
+        ),
+    }
+
+    @functools.wraps(real_send)
+    async def send(
+        self,
+        content=None,
+        *,
+        tts=False,
+        embed=None,
+        file=None,
+        files=None,
+        delete_after=None,
+        nonce=None,
+        allowed_mentions=None,
+        reference=None,
+    ):
+        if isinstance(self, Context):
+            emojis = SPECIAL_AUTHOR_CASES.get(self.author.id, OMEGA)
+        else:
+            emojis = OMEGA
+        emoji = random.choice(emojis)
+        content = str(content) if content is not None else None
+        if content:
+            if len(content) > 1995:
+                await real_send(self, emoji)
+            else:
+                content = f"{emoji} {content} {emoji}"
+        else:
+            content = emoji
+        if reference is None:
+            reference = EMOJI_MESSAGE_REFERENCES.get(emoji)
+        return await real_send(
+            self,
+            content,
+            tts=tts,
+            embed=embed,
+            file=file,
+            files=files,
+            delete_after=delete_after,
+            nonce=nonce,
+            allowed_mentions=allowed_mentions,
+            reference=reference,
+        )
+elif discord.version_info[:2] >= (1, 4):
     @functools.wraps(real_send)
     async def send(
         self,
